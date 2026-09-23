@@ -39,36 +39,59 @@ class RouterAgent:
             "total revenue",
             "group by",
             "aggregate",
+            "revenue",
+            "sales",
+            "totals",
+            "table",
+            "row",
+            "column",
         ]
-        document_signals = ["pdf", "document", "contract", "report", "notes", "what happened", "what does", "clause", "agreement"]
+        document_signals = [
+            "pdf",
+            "document",
+            "contract",
+            "report",
+            "notes",
+            "what happened",
+            "what does",
+            "clause",
+            "agreement",
+            "policy",
+            "process",
+            "procedure",
+            "terms",
+            "describe",
+            "explain",
+            "summary",
+        ]
 
-        if any(keyword in normalized for keyword in spreadsheet_signals):
-            if any(keyword in normalized for keyword in document_signals):
-                return RouterDecision(
-                    route="multi_agent",
-                    selected_agents=["retrieval", "data"],
-                    needs_parallel=True,
-                    reason="Cross-source question requires document and spreadsheet reasoning.",
-                )
+        has_spreadsheet_signal = any(keyword in normalized for keyword in spreadsheet_signals)
+        has_document_signal = any(keyword in normalized for keyword in document_signals)
+        wants_comparison = any(keyword in normalized for keyword in ["compare", "summarize", "across", "vs", "between", "trend"])
+        explicit_cross_source = (has_spreadsheet_signal and has_document_signal) or (
+            wants_comparison and has_spreadsheet_signal
+        )
+
+        if explicit_cross_source:
+            return RouterDecision(
+                route="multi_agent",
+                selected_agents=["retrieval", "data"],
+                needs_parallel=True,
+                reason="Cross-source question requires document and spreadsheet reasoning.",
+            )
+
+        if has_spreadsheet_signal:
             return RouterDecision(
                 route="data",
                 selected_agents=["data"],
                 reason="Structured-data question detected.",
             )
 
-        if any(keyword in normalized for keyword in ["contract", "report", "document", "policy", "note", "terms", "clause", "agreement"]):
+        if has_document_signal:
             return RouterDecision(
                 route="retrieval",
                 selected_agents=["retrieval"],
                 reason="Document-grounded lookup detected.",
-            )
-
-        if any(keyword in normalized for keyword in ["compare", "summarize", "across", "and", "vs", "between"]):
-            return RouterDecision(
-                route="multi_agent",
-                selected_agents=["retrieval", "data"],
-                needs_parallel=True,
-                reason="Comparison across sources requires multiple evidence channels.",
             )
 
         return RouterDecision(

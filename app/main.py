@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Any
 
 import streamlit as st
 
@@ -10,6 +11,19 @@ from app.agents.synthesis import SynthesisAgent
 from app.config import get_settings
 from app.graph.state import SessionState
 from app.ingestion.router import IngestionRouter
+
+
+def build_demo_summary(route: str, selected_agents: list[str], evidence: list[dict[str, Any]]) -> dict[str, Any]:
+    source_names = [item.get("file_name") or item.get("name") or "unknown" for item in evidence]
+    return {
+        "route": route,
+        "selected_agents": selected_agents,
+        "sources": source_names,
+        "trace_text": (
+            f"Agent trace: route={route}; agents={', '.join(selected_agents) if selected_agents else 'default'}; "
+            f"sources={', '.join(source_names) if source_names else 'none'}"
+        ),
+    }
 
 
 def _init_session_state() -> None:
@@ -82,6 +96,7 @@ def _render_chat() -> None:
 
         router = RouterAgent().route_query(prompt)
         answer = f"Routing decision: {router.route} via {', '.join(router.selected_agents) or 'default'}"
+        summary: dict[str, Any] | None = None
 
         if session.uploaded_files:
             evidence = []
@@ -92,7 +107,16 @@ def _render_chat() -> None:
                 relevant = RetrievalAgent().retrieve(prompt, evidence, top_k=3)
                 answer = SynthesisAgent().synthesize(prompt, relevant)
                 evidence_labels = ", ".join(doc.file_name for doc in relevant[:3])
+                summary = build_demo_summary(
+                    router.route,
+                    router.selected_agents,
+                    [{"file_name": doc.file_name, "source_type": doc.source_type} for doc in relevant[:3]],
+                )
                 answer += f"\n\nRouter: {router.route} | Agents: {', '.join(router.selected_agents)} | Sources: {evidence_labels or 'none'}"
+                answer += f"\n\n{summary['trace_text']}"
+
+        if summary is None:
+            summary = build_demo_summary(router.route, router.selected_agents, [])
 
         session.last_question = prompt
         session.last_answer = answer
@@ -101,6 +125,10 @@ def _render_chat() -> None:
 
         with st.chat_message("assistant"):
             st.write(answer)
+
+        if summary:
+            with st.expander("Agent trace"):
+                st.write(summary["trace_text"])
 
 
 def main() -> None:

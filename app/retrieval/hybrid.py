@@ -4,16 +4,26 @@ from collections import Counter
 from typing import Iterable
 
 from app.ingestion.models import Evidence
+from app.retrieval.bm25 import BM25Retriever
+from app.retrieval.reranker import Reranker
 
 
 class HybridRetriever:
-    """A lightweight hybrid retriever that combines keyword overlap and text scoring."""
+    """A lightweight hybrid retriever combining keyword overlap, BM25, and a rerank stage."""
+
+    def __init__(self) -> None:
+        self.bm25 = BM25Retriever()
+        self.reranker = Reranker()
 
     def search(self, query: str, evidence: Iterable[Evidence], top_k: int = 5) -> list[Evidence]:
+        docs = list(evidence)
+        if not docs:
+            return []
+
         query_tokens = self._normalize_query(query)
         ranked: list[tuple[float, Evidence]] = []
 
-        for doc in evidence:
+        for doc in docs:
             text = self._normalize_query(doc.content)
             overlap = self._keyword_overlap_score(query_tokens, text)
             exact_phrase = 1.0 if query.lower() and query.lower() in doc.content.lower() else 0.0
@@ -22,12 +32,21 @@ class HybridRetriever:
             doc.metadata["query_terms"] = query_tokens
             ranked.append((score, doc))
 
-        ranked.sort(key=lambda item: item[0], reverse=True)
-        results = [doc for _, doc in ranked[:top_k]]
+        bm25_results = self.bm25.search(query, docs, top_k=top_k)
+        reranked = self.reranker.rerank(query, bm25_results or docs)
+
+        hybrid = []
+        seen: set[str] = set()
+        for doc in reranked + [doc for _, doc in sorted(ranked, key=lambda item: item[0], reverse=True)][:top_k]:
+            if doc.document_id not in seen:
+                hybrid.append(doc)
+                seen.add(doc.document_id)
+
+        results = hybrid[:top_k]
         for rank, doc in enumerate(results, start=1):
             doc.metadata["retrieval_rank"] = rank
 
-        return results if results else list(evidence)[:top_k]
+        return results if results else docs[:top_k]
 
     def _normalize_query(self, text: str) -> list[str]:
         if not text:

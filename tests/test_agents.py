@@ -41,3 +41,18 @@ def test_synthesis_agent_uses_grounded_evidence_and_citations():
     assert "12%" in answer
     assert "quarterly_report.txt" in answer
     assert "Q4" in answer
+
+
+def test_synthesis_agent_abstains_when_evidence_is_unrelated():
+    evidence = [
+        Evidence(
+            document_id="doc-1",
+            file_name="marketing_notes.txt",
+            file_type="txt",
+            content="The campaign focused on brand awareness and launch timing.",
+        ),
+    ]
+
+    answer = SynthesisAgent().synthesize("What was the Q4 revenue growth?", evidence)
+
+    assert "insufficient evidence" in answer.lower()
