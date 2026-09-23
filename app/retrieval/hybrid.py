@@ -3,8 +3,10 @@ from __future__ import annotations
 from collections import Counter
 from typing import Iterable
 
+from app.config import Settings
 from app.ingestion.models import Evidence
 from app.retrieval.bm25 import BM25Retriever
+from app.retrieval.qdrant_store import QdrantVectorStore
 from app.retrieval.reranker import Reranker
 
 
@@ -14,11 +16,20 @@ class HybridRetriever:
     def __init__(self) -> None:
         self.bm25 = BM25Retriever()
         self.reranker = Reranker()
+        settings = Settings()
+        self.qdrant = QdrantVectorStore(
+            collection_name=settings.qdrant_collection,
+            enabled=settings.qdrant_enabled,
+        )
 
     def search(self, query: str, evidence: Iterable[Evidence], top_k: int = 5) -> list[Evidence]:
         docs = list(evidence)
         if not docs:
             return []
+
+        qdrant_results = self.qdrant.search(query, top_k=top_k) if self.qdrant.enabled else []
+        if qdrant_results:
+            return qdrant_results
 
         query_tokens = self._normalize_query(query)
         ranked: list[tuple[float, Evidence]] = []

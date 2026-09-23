@@ -3,6 +3,7 @@
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.embeddings import LocalEmbeddingModel
 from app.retrieval.hybrid import HybridRetriever
+from app.retrieval.qdrant_store import QdrantVectorStore
 from app.retrieval.reranker import Reranker
 from app.retrieval.vector_store import LocalVectorStore
 
@@ -11,5 +12,6 @@ __all__ = [
     "HybridRetriever",
     "LocalEmbeddingModel",
     "LocalVectorStore",
+    "QdrantVectorStore",
     "Reranker",
 ]

@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     langchain_tracing: bool = False
     langchain_project: str = "demo-prjt-observation"
 
+    qdrant_enabled: bool = False
+    qdrant_url: str = "http://localhost:6333"
+    qdrant_collection: str = "document_intelligence"
+    qdrant_timeout_seconds: int = 10
+
 
 def get_settings() -> dict[str, str | bool | int]:
     settings = Settings()
@@ -42,4 +47,8 @@ def get_settings() -> dict[str, str | bool | int]:
         "langchain_api_url": settings.langchain_api_url,
         "langchain_tracing": settings.langchain_tracing,
         "langchain_project": settings.langchain_project,
+        "qdrant_enabled": settings.qdrant_enabled,
+        "qdrant_url": settings.qdrant_url,
+        "qdrant_collection": settings.qdrant_collection,
+        "qdrant_timeout_seconds": settings.qdrant_timeout_seconds,
     }
