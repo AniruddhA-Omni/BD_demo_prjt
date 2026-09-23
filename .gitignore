@@ -12,3 +12,6 @@ wheels/
 # markdown files
 multi_agent_document_chat_plan.md
 IMPLEMENTATION_TODO.md
+
+# env
+.env

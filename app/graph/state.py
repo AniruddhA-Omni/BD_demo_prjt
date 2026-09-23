@@ -1,11 +1,12 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SessionState(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     session_id: str = Field(..., description="Unique per-session identifier")
     uploaded_files: list[str] = Field(default_factory=list)
-    conversation_messages: list[str] = Field(default_factory=list)
+    conversation_messages: list[dict[str, str]] = Field(default_factory=list)
     active_context: str = ""
-
-    class Config:
-        arbitrary_types_allowed = True
+    last_question: str = ""
+    last_answer: str = ""

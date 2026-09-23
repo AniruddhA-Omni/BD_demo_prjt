@@ -2,19 +2,44 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
+    )
 
     app_name: str = "BD Demo Project"
     app_description: str = "Local-first multi-agent document intelligence showcase"
+    page_title: str = "Document Intelligence Demo"
+
     ollama_base_url: str = "http://localhost:11434"
+    ollama_llm_model: str = "gemma4:e4b"
+    llm_model: str = "deepseek-r1:1.5b"
+    llm_temperature: float = 0.0
+
+    max_files_per_session: int = 50
     enable_langsmith: bool = False
+    langchain_api_key: str = ""
+    langchain_api_url: str = "https://api.smith.langchain.com"
+    langchain_tracing: bool = False
+    langchain_project: str = "demo-prjt-observation"
 
 
-def get_settings() -> dict[str, str | bool]:
+def get_settings() -> dict[str, str | bool | int]:
     settings = Settings()
     return {
         "app_name": settings.app_name,
         "app_description": settings.app_description,
+        "page_title": settings.page_title,
         "ollama_base_url": settings.ollama_base_url,
+        "ollama_llm_model": settings.ollama_llm_model,
+        "llm_model": settings.llm_model,
+        "llm_temperature": settings.llm_temperature, # type: ignore
+        "max_files_per_session": settings.max_files_per_session,
         "enable_langsmith": settings.enable_langsmith,
+        "langchain_api_key": settings.langchain_api_key,
+        "langchain_api_url": settings.langchain_api_url,
+        "langchain_tracing": settings.langchain_tracing,
+        "langchain_project": settings.langchain_project,
     }
