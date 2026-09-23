@@ -1,5 +1,4 @@
-def main():
-    print("Hello from bd-demo-prjt!")
+from app.main import main
 
 
 if __name__ == "__main__":
