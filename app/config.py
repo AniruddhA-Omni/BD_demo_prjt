@@ -19,14 +19,16 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.0
 
     max_files_per_session: int = 50
-    enable_langsmith: bool = False
+    enable_langsmith: bool = True
     langchain_api_key: str = ""
     langchain_api_url: str = "https://api.smith.langchain.com"
-    langchain_tracing: bool = False
+    langchain_tracing: bool = True
     langchain_project: str = "demo-prjt-observation"
 
-    qdrant_enabled: bool = False
+    qdrant_enabled: bool = True
     qdrant_url: str = "http://localhost:6333"
+    qdrant_api_key: str = ""
+    qdrant_cloud_inference: bool = False
     qdrant_collection: str = "document_intelligence"
     qdrant_timeout_seconds: int = 10
 
@@ -49,6 +51,8 @@ def get_settings() -> dict[str, str | bool | int]:
         "langchain_project": settings.langchain_project,
         "qdrant_enabled": settings.qdrant_enabled,
         "qdrant_url": settings.qdrant_url,
+        "qdrant_api_key": settings.qdrant_api_key,
+        "qdrant_cloud_inference": settings.qdrant_cloud_inference,
         "qdrant_collection": settings.qdrant_collection,
         "qdrant_timeout_seconds": settings.qdrant_timeout_seconds,
     }

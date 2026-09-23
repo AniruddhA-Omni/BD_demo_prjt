@@ -26,4 +26,6 @@ dependencies = [
   "scikit-learn>=1.6,<2.0",
   "pytest>=9.1.1",
   "pydantic-settings>=2.15.0",
+  "ragas>=0.2.15,<1.0",
+  "torchvision>=0.29.0",
 ]

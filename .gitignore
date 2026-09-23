@@ -10,7 +10,7 @@ wheels/
 .venv1
 
 # markdown files
-multi_agent_document_chat_plan.md
+# multi_agent_document_chat_plan.md
 IMPLEMENTATION_TODO.md
 
 # env
