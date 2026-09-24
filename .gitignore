@@ -7,7 +7,7 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv1
+.venv
 
 # markdown files
 # multi_agent_document_chat_plan.md
@@ -15,3 +15,16 @@ IMPLEMENTATION_TODO.md
 
 # env
 .env
+
+# Local Qdrant data (QDRANT_MODE=embedded), evaluation output and log files
+.qdrant/
+evals/results.json
+logs/
+
+# Markdown files
+CLAUDE.md
+IMPLEMENTATION_TODO.md
+IMPROVEMENT_PLAN.md
+
+# documents folder
+docs/*

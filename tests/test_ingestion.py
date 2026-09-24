@@ -42,7 +42,7 @@ def test_ingestion_router_extracts_spreadsheet_data(tmp_path: Path):
     assert evidence[0].source_type == "table"
 
 
-def test_ingestion_router_handles_unsupported_file_types(tmp_path: Path):
+def test_ingestion_router_reports_corrupt_documents_as_failed(tmp_path: Path):
     file_path = tmp_path / "report.pdf"
     file_path.write_bytes(b"%PDF-1.4 not-a-real-pdf")
 
@@ -51,6 +51,15 @@ def test_ingestion_router_handles_unsupported_file_types(tmp_path: Path):
     assert len(evidence) == 1
     assert evidence[0].file_name == "report.pdf"
     assert evidence[0].file_type == "pdf"
-    assert "queued for parsing" in evidence[0].content.lower()
+    assert evidence[0].metadata["status"] in {"failed", "empty"}
     assert evidence[0].metadata["source_name"] == "report.pdf"
     assert evidence[0].metadata["source_path"] == str(file_path)
+
+
+def test_ingestion_router_flags_unknown_file_types(tmp_path: Path):
+    file_path = tmp_path / "archive.zip"
+    file_path.write_bytes(b"PK")
+
+    evidence = IngestionRouter().ingest_file(file_path)
+
+    assert evidence[0].metadata["status"] == "unsupported"

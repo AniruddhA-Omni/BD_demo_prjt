@@ -1,31 +1,48 @@
 [project]
 name = "bd-demo-prjt"
 version = "0.1.0"
-description = "Add your description here"
+description = "Local-first multi-agent document intelligence demo"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-  "langgraph>=0.6,<1.0",
-  "langchain-core>=1.0,<2.0",
-  "langchain-ollama>=1.0,<2.0",
-  "langsmith>=0.4,<1.0",
-  "qdrant-client>=1.15,<2.0",
-  "sentence-transformers>=5.1,<6.0",
+  "langgraph>=1.2,<2.0",
+  "langchain-core>=1.6,<2.0",
+  "langchain-ollama>=1.1,<2.0",
+  "langsmith>=0.14,<1.0",
+  "qdrant-client>=1.19,<2.0",
+  "sentence-transformers>=6.1,<7.0",
   "rank-bm25>=0.2.2,<1.0",
-  "pymupdf>=1.26,<2.0",
+  "pymupdf>=1.28,<2.0",
   "python-docx>=1.2,<2.0",
   "python-pptx>=1.0,<2.0",
-  "pandas>=2.2,<3.0",
+  "pandas>=3.0,<4.0",
   "openpyxl>=3.1,<4.0",
-  "pillow>=11,<13",
+  "pillow>=12,<13",
   "pytesseract>=0.3.13,<1.0",
-  "python-dotenv>=1.1,<2.0",
-  "streamlit>=1.50,<2.0",
-  "pydantic>=2.11,<3.0",
-  "numpy>=2.0,<3.0",
-  "scikit-learn>=1.6,<2.0",
-  "pytest>=9.1.1",
-  "pydantic-settings>=2.15.0",
-  "ragas>=0.2.15,<1.0",
+  "streamlit>=1.64,<2.0",
+  "pydantic>=2.13,<3.0",
+  "pydantic-settings>=2.15,<3.0",
   "torchvision>=0.29.0",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Installing the project (editable, via `uv sync`) makes `app` importable from anywhere. `streamlit run
+# app/main.py` puts app/ itself on sys.path, not the repo root, so the app fails to start without this.
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[project.optional-dependencies]
+eval = ["ragas>=0.4.3,<1.0"]
+
+[dependency-groups]
+dev = ["pytest>=9.1,<10.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Integration tests need a running Ollama with the configured model; they are excluded by default.
+# Run them with: uv run python -m pytest -m integration
+addopts = "-m 'not integration'"
+markers = ["integration: needs a running Ollama with the configured model (run with -m integration)"]

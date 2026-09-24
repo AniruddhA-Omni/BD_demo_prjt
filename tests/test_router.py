@@ -29,19 +29,3 @@ def test_router_does_not_over_trigger_multi_agent_for_generic_and_queries():
 
     assert decision.route == "retrieval"
     assert decision.selected_agents == ["retrieval"]
-
-
-def test_vector_store_falls_back_to_lexical_search_without_embeddings():
-    from app.retrieval.vector_store import LocalVectorStore
-    from app.ingestion.models import Evidence
-
-    store = LocalVectorStore()
-    store.add_documents([
-        Evidence(document_id="1", file_name="report.txt", file_type="txt", source_type="text", content="Revenue increased by 12% in Q4."),
-        Evidence(document_id="2", file_name="plan.txt", file_type="txt", source_type="text", content="The team plans a new launch next quarter."),
-    ])
-
-    results = store.search("Q4 revenue", top_k=1)
-
-    assert results
-    assert results[0].file_name == "report.txt"

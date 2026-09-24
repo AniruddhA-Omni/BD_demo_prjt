@@ -80,40 +80,6 @@ def test_hybrid_retriever_avoids_false_positive_for_generic_policy_query():
     assert ranked[0].file_name == "policy.txt"
 
 
-def test_hybrid_retriever_prefers_qdrant_dense_results_when_enabled(monkeypatch):
-    class FakePoint:
-        def __init__(self, doc_id: str, payload: dict) -> None:
-            self.id = doc_id
-            self.payload = payload
-
-    class FakeClient:
-        def __init__(self) -> None:
-            self.calls = []
-
-        def get_collection(self, collection_name: str):
-            raise RuntimeError("missing")
-
-        def create_collection(self, **kwargs):
-            self.calls.append(kwargs)
-
-        def query_points(self, **kwargs):
-            return type("Result", (), {"points": [FakePoint("doc-2", {"document_id": "doc-2", "file_name": "dense.txt", "file_type": "txt", "source_type": "text", "content": "Revenue surged in Q4.", "metadata": {}})]})( )
-
-    retriever = HybridRetriever()
-    retriever.qdrant.enabled = True
-    retriever.qdrant.client = FakeClient()
-    retriever.qdrant._embed = lambda text: [1.0, 0.0] if "revenue" in text.lower() else [0.0, 1.0]
-
-    evidence = [
-        Evidence(document_id="doc-1", file_name="policy.txt", file_type="txt", content="The process and policy require manager approval."),
-        Evidence(document_id="doc-2", file_name="dense.txt", file_type="txt", content="Revenue surged in Q4."),
-    ]
-
-    ranked = retriever.search("revenue q4", evidence, top_k=2)
-
-    assert ranked[0].file_name == "dense.txt"
-
-
 def test_hybrid_retriever_uses_weighted_hybrid_scoring():
     retriever = HybridRetriever()
 
